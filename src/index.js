@@ -3,57 +3,119 @@
 import './styles.css'
 import { v4 as uuidv4 } from 'uuid';
 
-// 1 <= priority <= 4
+/**
+ * @param {String} text 
+ */
+const ChecklistItem = (text) => {
+    const _id = uuidv4()
+
+    const getId = () => _id;
+
+    let completed = false;
+
+    const getCompleted = () => completed;
+
+    const toggleCompleted = () => completed = !completed;
+
+    return { text, getCompleted, toggleCompleted, getId }
+}
+
+const Checklist = () => {
+    const _checklistContainer = {};
+
+    const get = () => _checklistContainer;
+
+    /**
+     * @param {ChecklistItem} checklistItem 
+     */
+    const add = (checklistItem) => _checklistContainer[checklistItem.getId()] = checklistItem;
+
+    const remove = (checklistItemId) => delete _checklistContainer[checklistItemId];
+
+    return { get, add, remove }
+}
+
+/**
+ * @param {String[] | String} labels
+ */
+const Labels = (labels) => {
+    const _labelContainer = new Set();
+    labels instanceof Array
+        ? labels.forEach(el => _labelContainer.add(el))
+        : labels !== undefined && labels !== null
+            ? _labelContainer.add(labels)
+            : _labelContainer;
+
+    const get = () => _labelContainer;
+    /**
+     * @param {String[] | String} newLabels
+     */
+    const add = (newLabels) => newLabels instanceof Array
+        ? newLabels.forEach(el => _labelContainer.add(el))
+        : _labelContainer.add(newLabels);
+
+    const remove = (label) => _labelContainer.delete(label);
+
+    return { get, add, remove }
+}
+
 /** 
  * @param {String} title 
  * @param {String} description
  * @param {Date} dueDate
  * @param {Number} priority
- * @param {String[] | String} labels
+ * @param {Labels} labels
  */
 const Todo = (title, description, dueDate, priority, labels) => {
-    const _labelContainer = [];
-    labels instanceof Array
-        ? _labelContainer.push(...labels)
-        : _labelContainer.push(labels);
-
     const _id = uuidv4();
     const getId = () => _id;
 
-    const getLabels = () => _labelContainer;
-    /**
-     * @param {String[] | String} newLabels
-     */
-    const addLabels = (newLabels) => newLabels instanceof Array
-        ? _labelContainer.push(...newLabels)
-        : _labelContainer.push(newLabels);
+    if (priority > 4) {
+        priority = 4;
+    } else if (priority < 1) {
+        priority = 1;
+    }
 
+    const checklist = Checklist();
 
+    const toString = () => {
+        return {
+            title,
+            description,
+            dueDate,
+            priority,
+            id: getId(),
+            labels: labels.get(),
+            checklist: checklist.get()
+        };
+    }
 
-    return { title, description, dueDate, priority, getLabels, addLabels, getId };
+    return { title, description, dueDate, priority, getId, labels, checklist, toString };
 }
 
 /** 
  * @param {String} title
  */
 const Project = (title) => {
-    const _todos = [];
+    const _id = uuidv4();
 
-    const getTitle = () => title;
+    const getId = () => _id;
 
-    /** 
-     * @param {String} newTitle
-     */
-    const setTitle = (newTitle) => title = newTitle;
-
-    const getTodos = () => _todos;
+    const _todos = {};
 
     /**
      * @param {Todo} todo 
      */
-    const addTodo = (todo) => { _todos.push(todo) }
+    const add = (todo) => _todos[todo.getId()] = todo;
 
-    return { getTitle, setTitle, getTodos, addTodo };
+    /**
+     * @param {String} todoId 
+     */
+    const remove = (todoId) => delete _todos[todoId];
+
+    const get = () => _todos;
+
+    return { title, getId, add, remove, get };
 }
 
 /**
