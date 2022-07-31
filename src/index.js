@@ -1,11 +1,7 @@
-// @ts-check
-
 import './styles.css'
 import { v4 as uuidv4 } from 'uuid';
+import _ from 'lodash';
 
-/**
- * @param {String} text 
- */
 const ChecklistItem = (text) => {
     const _id = uuidv4()
 
@@ -21,23 +17,41 @@ const ChecklistItem = (text) => {
 }
 
 const Checklist = () => {
-    const _checklistContainer = {};
+    const _checklistContainer = [];
 
     const get = () => _checklistContainer;
 
-    /**
-     * @param {ChecklistItem} checklistItem 
-     */
-    const add = (checklistItem) => _checklistContainer[checklistItem.getId()] = checklistItem;
+    const add = (checklistItem) => _checklistContainer.push(checklistItem);
 
-    const remove = (checklistItemId) => delete _checklistContainer[checklistItemId];
+    const _getIndex = (checklistItemId) => _.findIndex(_checklistContainer, (el) => {
+        return el.getId() === checklistItemId;
+    });
 
-    return { get, add, remove }
+    const remove = (checklistItemId) => {
+        const index = _getIndex(checklistItemId);
+
+        _checklistContainer.splice(index, 1);
+    }
+
+    const moveItemUp = (checklistItemId) => {
+        const index = _getIndex(checklistItemId);
+        if (index > 0) {
+            [_checklistContainer[index], _checklistContainer[index - 1]] =
+                [_checklistContainer[index - 1], _checklistContainer[index]];
+        }
+    }
+
+    const moveItemDown = (checklistItemId) => {
+        const index = _getIndex(checklistItemId);
+        if (index < _checklistContainer.length - 1) {
+            [_checklistContainer[index], _checklistContainer[index + 1]] =
+                [_checklistContainer[index + 1], _checklistContainer[index]];
+        }
+    }
+
+    return { get, add, remove, moveItemUp, moveItemDown }
 }
 
-/**
- * @param {String[] | String} labels
- */
 const Labels = (labels) => {
     const _labelContainer = new Set();
     labels instanceof Array
@@ -47,9 +61,7 @@ const Labels = (labels) => {
             : _labelContainer;
 
     const get = () => _labelContainer;
-    /**
-     * @param {String[] | String} newLabels
-     */
+
     const add = (newLabels) => newLabels instanceof Array
         ? newLabels.forEach(el => _labelContainer.add(el))
         : _labelContainer.add(newLabels);
@@ -59,13 +71,6 @@ const Labels = (labels) => {
     return { get, add, remove }
 }
 
-/** 
- * @param {String} title 
- * @param {String} description
- * @param {Date} dueDate
- * @param {Number} priority
- * @param {Labels} labels
- */
 const Todo = (title, description, dueDate, priority, labels) => {
     const _id = uuidv4();
     const getId = () => _id;
@@ -93,9 +98,6 @@ const Todo = (title, description, dueDate, priority, labels) => {
     return { title, description, dueDate, priority, getId, labels, checklist, toString };
 }
 
-/** 
- * @param {String} title
- */
 const Project = (title) => {
     const _id = uuidv4();
 
@@ -103,14 +105,8 @@ const Project = (title) => {
 
     const _todos = {};
 
-    /**
-     * @param {Todo} todo 
-     */
     const add = (todo) => _todos[todo.getId()] = todo;
 
-    /**
-     * @param {String} todoId 
-     */
     const remove = (todoId) => delete _todos[todoId];
 
     const get = () => _todos;
@@ -118,9 +114,6 @@ const Project = (title) => {
     return { title, getId, add, remove, get };
 }
 
-/**
- * @param {Project[] | Project} projects 
- */
 const ProjectContainer = (projects) => {
     const _projectContainer = [];
     projects instanceof Array
@@ -128,9 +121,7 @@ const ProjectContainer = (projects) => {
         : _projectContainer.push(projects);
 
     const getProjects = () => _projectContainer;
-    /**
-     * @param {Project[] | Project} newProjects
-     */
+
     const addProjects = (newProjects) => newProjects instanceof Array
         ? _projectContainer.push(...newProjects)
         : _projectContainer.push(newProjects);
