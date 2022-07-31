@@ -49,7 +49,9 @@ const Checklist = () => {
         }
     }
 
-    return { get, add, remove, moveItemUp, moveItemDown }
+    const getItem = (checklistItemId) => _checklistContainer[_getIndex(checklistItemId)];
+
+    return { get, add, remove, moveItemUp, moveItemDown, getItem }
 }
 
 const Labels = (labels) => {
