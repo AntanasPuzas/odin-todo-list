@@ -2,6 +2,42 @@ import './styles.css'
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
 
+const Collection = (collection) => {
+    const get = () => collection;
+
+    const add = (item) => collection.push(item);
+
+    const _getIndex = (itemId) => _.findIndex(collection, (el) => {
+        return el.getId() === itemId;
+    });
+
+    const shiftItemUp = (itemId) => {
+        const index = _getIndex(itemId);
+        if (index > 0) {
+            [collection[index], collection[index - 1]] =
+                [collection[index - 1], collection[index]];
+        }
+    }
+
+    const shiftItemDown = (itemId) => {
+        const index = _getIndex(itemId);
+        if (index < collection.length - 1) {
+            [collection[index], collection[index + 1]] =
+                [collection[index + 1], collection[index]];
+        }
+    }
+
+    const remove = (itemId) => {
+        const index = _getIndex(itemId);
+
+        collection.splice(index, 1);
+    }
+
+    const getItem = (itemId) => collection[_getIndex(itemId)];
+
+    return { get, add, shiftItemUp, shiftItemDown, remove, getItem }
+}
+
 const ChecklistItem = (text) => {
     const _id = uuidv4()
 
@@ -19,39 +55,14 @@ const ChecklistItem = (text) => {
 const Checklist = () => {
     const _checklistContainer = [];
 
-    const get = () => _checklistContainer;
+    const { get } = Collection(_checklistContainer);
+    const { add } = Collection(_checklistContainer);
+    const { shiftItemUp } = Collection(_checklistContainer);
+    const { shiftItemDown } = Collection(_checklistContainer);
+    const { remove } = Collection(_checklistContainer);
+    const { getItem } = Collection(_checklistContainer);
 
-    const add = (checklistItem) => _checklistContainer.push(checklistItem);
-
-    const _getIndex = (checklistItemId) => _.findIndex(_checklistContainer, (el) => {
-        return el.getId() === checklistItemId;
-    });
-
-    const remove = (checklistItemId) => {
-        const index = _getIndex(checklistItemId);
-
-        _checklistContainer.splice(index, 1);
-    }
-
-    const moveItemUp = (checklistItemId) => {
-        const index = _getIndex(checklistItemId);
-        if (index > 0) {
-            [_checklistContainer[index], _checklistContainer[index - 1]] =
-                [_checklistContainer[index - 1], _checklistContainer[index]];
-        }
-    }
-
-    const moveItemDown = (checklistItemId) => {
-        const index = _getIndex(checklistItemId);
-        if (index < _checklistContainer.length - 1) {
-            [_checklistContainer[index], _checklistContainer[index + 1]] =
-                [_checklistContainer[index + 1], _checklistContainer[index]];
-        }
-    }
-
-    const getItem = (checklistItemId) => _checklistContainer[_getIndex(checklistItemId)];
-
-    return { get, add, remove, moveItemUp, moveItemDown, getItem }
+    return { get, add, remove, shiftItemUp, shiftItemDown, getItem }
 }
 
 const Labels = (labels) => {
@@ -105,28 +116,27 @@ const Project = (title) => {
 
     const getId = () => _id;
 
-    const _todos = {};
+    const _todos = [];
 
-    const add = (todo) => _todos[todo.getId()] = todo;
+    const { add } = Collection(_todos);
+    const { remove } = Collection(_todos);
+    const { get } = Collection(_todos);
+    const { shiftItemUp } = Collection(_todos);
+    const { shiftItemDown } = Collection(_todos);
+    const { getItem } = Collection(_todos);
 
-    const remove = (todoId) => delete _todos[todoId];
-
-    const get = () => _todos;
-
-    return { title, getId, add, remove, get };
+    return { title, getId, add, remove, get, getItem };
 }
 
-const ProjectContainer = (projects) => {
-    const _projectContainer = [];
-    projects instanceof Array
-        ? _projectContainer.push(...projects)
-        : _projectContainer.push(projects);
+const ProjectContainer = () => {
+    const _projects = [];
 
-    const getProjects = () => _projectContainer;
+    const { get } = Collection(_projects);
+    const { add } = Collection(_projects);
+    const { remove } = Collection(_projects);
+    const { getItem } = Collection(_projects);
+    const { shiftItemDown } = Collection(_projects);
+    const { shiftItemUp } = Collection(_projects)
 
-    const addProjects = (newProjects) => newProjects instanceof Array
-        ? _projectContainer.push(...newProjects)
-        : _projectContainer.push(newProjects);
-
-    return { getProjects, addProjects }
+    return { get, getItem, add, remove, shiftItemUp, shiftItemDown }
 }
